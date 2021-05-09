@@ -83,17 +83,25 @@ app.put("/api/v1/restaurants/:id", async (req, res, next) => {
 
 app.delete("/api/v1/restaurants/:id", async (req, res, next) => {
   try {
-    const restaurants = await db.query(
-      "DELETE FROM reviews WHERE restaurant_id = $1 RETURNING *; DELETE FROM restaurants WHERE id = $1 RETURNING *;",
+    const reviews = await db.query(
+      "DELETE FROM reviews WHERE restaurant_id = $1 RETURNING *;",
       [req.params.id]
     );
+    const restaurants = await db.query(
+      " DELETE FROM restaurants WHERE id = $1 RETURNING *;",
+      [req.params.id]
+    );
+
     res.status(204).json({
       data: {
         sucess: true,
         result: restaurants.rows[0],
+        reviews: reviews.rows[0],
       },
     });
-  } catch (error) {}
+  } catch (error) {
+    res.json(error);
+  }
 });
 
 app.post("/api/v1/restaurants/:id/addReview", async (req, res, next) => {
